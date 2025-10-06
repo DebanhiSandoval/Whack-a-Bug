@@ -28,8 +28,8 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(4, 100px);
-      grid-template-rows: repeat(3, 100px);
+      grid-template-columns: repeat(5, 100px);
+      grid-template-rows: repeat(4, 100px);
       gap: 15px;
       justify-content: center;
       margin: 20px auto;
@@ -48,10 +48,9 @@
       color: #66ff66;
     }
 
-    .bug {
-      font-size: 2em;
-      pointer-events: none;
-    }
+      .bug {
+        font-size: 2em;
+      }
 
     .splat {
       font-size: 2em;
@@ -72,7 +71,7 @@
 </head>
 <body>
 
-  <div class="scoreboard">
+  <div class="scoreboard" id="scoreboard">
     <div>Score: <span id="score">0</span></div>
     <div><h1>BUG BASH!</h1></div>
     <div>⏱ <span id="timer">30</span>s</div>
@@ -84,24 +83,27 @@
 
   <div id="game-over"></div>
 
+  <button id="start-btn" style="margin: 40px auto 0 auto; display: block; padding: 16px 40px; font-size: 1.5em; font-family: 'Courier New', monospace; background: linear-gradient(90deg, #33ff77 60%, #22cc55 100%); color: #111; border: none; border-radius: 30px; box-shadow: 0 4px 16px rgba(50,255,120,0.2); cursor: pointer; transition: background 0.2s, transform 0.2s;">Start</button>
+
   <script>
     const grid = document.getElementById('grid');
     const scoreDisplay = document.getElementById('score');
     const timerDisplay = document.getElementById('timer');
     const gameOverDisplay = document.getElementById('game-over');
 
-    let score = 0;
-    let timeLeft = 30;
-    let gameInterval;
-    let bugTimeouts = [];
-    let gameActive = true;
+  let score = 0;
+  let timeLeft = 30;
+  let gameInterval;
+  let bugInterval;
+  let bugTimeouts = [];
+  let gameActive = false;
 
     const bugEmoji = '🪲';
     const splatEmoji = '💥';
 
-    // Create 12 holes
+    // Create 20 holes
     const holes = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 20; i++) {
       const hole = document.createElement('div');
       hole.classList.add('hole');
       hole.dataset.index = i;
@@ -151,9 +153,28 @@
       hole.addEventListener('click', handleClick);
     });
 
-    function startGame() {
-      const bugInterval = setInterval(spawnBug, 600);
+    const startBtn = document.getElementById('start-btn');
 
+    function startGame() {
+      // Reset game state
+      score = 0;
+      timeLeft = 30;
+      scoreDisplay.textContent = score;
+      timerDisplay.textContent = timeLeft;
+      gameOverDisplay.innerHTML = '';
+      gameActive = true;
+      document.getElementById('scoreboard').style.display = '';
+      holes.forEach(hole => {
+        hole.classList.remove('bug', 'splat');
+        hole.textContent = '';
+      });
+      bugTimeouts.forEach(timeout => clearTimeout(timeout));
+      bugTimeouts = [];
+
+      startBtn.style.display = 'none';
+      startBtn.textContent = 'Start';
+
+      bugInterval = setInterval(spawnBug, 600);
       gameInterval = setInterval(() => {
         timeLeft--;
         timerDisplay.textContent = timeLeft;
@@ -163,11 +184,13 @@
           bugTimeouts.forEach(timeout => clearTimeout(timeout));
           gameActive = false;
           gameOverDisplay.innerHTML = `<p>Game Over! Final Score: <strong>${score}</strong></p>`;
+          startBtn.textContent = 'Start Over';
+          startBtn.style.display = 'block';
         }
       }, 1000);
     }
 
-    startGame();
+  startBtn.addEventListener('click', startGame);
   </script>
 
 </body>
